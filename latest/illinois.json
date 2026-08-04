@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-08-04T15:56:00Z",
+  "region": "Illinois / Casey IL",
+  "bbox": {
+    "lat_min": 36.9,
+    "lat_max": 42.6,
+    "lon_min": -91.5,
+    "lon_max": -87.0
+  },
+  "source": "https://api.v2.sondehub.org",
+  "active_count": 0,
+  "payloads": [],
+  "notes": "Repository initialized. Daily automation will populate this file and daily/YYYY-MM-DD.json with Illinois-area SondeHub telemetry when available."
+}
