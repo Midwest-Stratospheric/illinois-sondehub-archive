@@ -1,0 +1,142 @@
+name: Daily Illinois SondeHub Archive
+
+on:
+  schedule:
+    # ~12:00 UTC every day
+    - cron: '0 12 * * *'
+  workflow_dispatch:  # allow manual runs
+
+permissions:
+  contents: write
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch & filter SondeHub Illinois data
+        run: |
+          python << 'EOF'
+          import json, urllib.request, datetime, os, traceback
+
+          BBOX = dict(lat_min=36.9, lat_max=42.6, lon_min=-91.5, lon_max=-87.0)
+          TARGETS = ('KE9CFY', 'X2GRIFFON', 'X2G', 'MSDS', 'MIDWESTSDS')
+          now = datetime.datetime.utcnow().replace(microsecond=0)
+          iso = now.isoformat() + 'Z'
+          date_str = now.strftime('%Y-%m-%d')
+
+          def get_json(url):
+              req = urllib.request.Request(url, headers={'User-Agent': 'MSDS-Illinois-SondeHub-Archive/1.0', 'Accept': 'application/json'})
+              with urllib.request.urlopen(req, timeout=45) as r:
+                  return json.loads(r.read().decode())
+
+          payloads = []
+          notes = []
+
+          # 1) Amateur telemetry
+          try:
+              data = get_json('https://api.v2.sondehub.org/amateur/telemetry')
+              if isinstance(data, dict):
+                  for call, times in data.items():
+                      if not isinstance(times, dict):
+                          continue
+                      keys = sorted(times.keys())
+                      if not keys:
+                          continue
+                      pkt = times[keys[-1]]
+                      lat = pkt.get('lat')
+                      lon = pkt.get('lon')
+                      if lat is None or lon is None:
+                          continue
+                      lat, lon = float(lat), float(lon)
+                      in_box = (BBOX['lat_min'] <= lat <= BBOX['lat_max'] and
+                                BBOX['lon_min'] <= lon <= BBOX['lon_max'])
+                      is_target = any(t in call.upper() for t in TARGETS)
+                      if in_box or is_target:
+                          payloads.append({
+                              'callsign': call,
+                              'lat': lat,
+                              'lon': lon,
+                              'alt_m': pkt.get('alt'),
+                              'datetime': pkt.get('datetime') or pkt.get('time_received'),
+                              'temp': pkt.get('temp'),
+                              'humidity': pkt.get('humidity') or pkt.get('humdity'),
+                              'vel_v': pkt.get('vel_v'),
+                              'source': 'amateur',
+                              'in_bbox': in_box,
+                              'is_msds_target': is_target
+                          })
+              notes.append(f'Amateur endpoint OK ({len(payloads)} matching)')
+          except Exception as e:
+              notes.append(f'Amateur endpoint error: {e}')
+
+          # 2) Optional: try specific KE9CFY high-res
+          try:
+              data = get_json('https://api.v2.sondehub.org/amateur/telemetry?payload_callsign=KE9CFY')
+              if isinstance(data, list) and data:
+                  pkt = data[-1]
+                  lat, lon = float(pkt.get('lat', 0)), float(pkt.get('lon', 0))
+                  payloads.append({
+                      'callsign': pkt.get('payload_callsign', 'KE9CFY'),
+                      'lat': lat, 'lon': lon,
+                      'alt_m': pkt.get('alt'),
+                      'datetime': pkt.get('datetime') or pkt.get('time_received'),
+                      'temp': pkt.get('temp'),
+                      'humidity': pkt.get('humidity') or pkt.get('humdity'),
+                      'vel_v': pkt.get('vel_v'),
+                      'source': 'amateur-ke9cfy',
+                      'in_bbox': True,
+                      'is_msds_target': True
+                  })
+                  notes.append('KE9CFY high-res packet found')
+          except Exception:
+              pass
+
+          # Dedupe by callsign (keep newest)
+          seen = {}
+          for p in payloads:
+              seen[p['callsign']] = p
+          payloads = list(seen.values())
+
+          out = {
+              'generated_at': iso,
+              'region': 'Illinois / Casey IL',
+              'bbox': BBOX,
+              'source': 'https://api.v2.sondehub.org',
+              'active_count': len(payloads),
+              'payloads': payloads,
+              'notes': '; '.join(notes) if notes else 'No active Illinois-area flights at collection time'
+          }
+
+          os.makedirs('latest', exist_ok=True)
+          os.makedirs('daily', exist_ok=True)
+
+          with open('latest/illinois.json', 'w') as f:
+              json.dump(out, f, indent=2)
+              f.write('\n')
+
+          with open(f'daily/{date_str}.json', 'w') as f:
+              json.dump(out, f, indent=2)
+              f.write('\n')
+
+          print(json.dumps(out, indent=2))
+          EOF
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name "MSDS Illinois Archive Bot"
+          git config user.email "launchcontrol@midwestsds.com"
+          git add latest/ daily/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Daily Illinois SondeHub snapshot $(date -u +%Y-%m-%d)"
+            git push
+          fi
