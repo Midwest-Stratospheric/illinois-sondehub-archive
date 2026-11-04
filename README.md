@@ -1,6 +1,6 @@
 # Illinois SondeHub Archive
 
-**Maintained by [Midwest Stratospheric Data Systems](https://www.midwestsds.com)**  
+**Maintained by [Aerostratospheric](https://www.midwestsds.com)**  
 Casey, Illinois · NASA GLOBE GO-4VW9B · Open atmospheric data
 
 Daily archive of public SondeHub telemetry focused on the **Illinois / Casey IL region**.  
@@ -27,7 +27,7 @@ Centered on **Casey, Illinois** (39.2992°N, 87.9925°W) and covering the majori
 
 - **SondeHub** / **SondeHub Amateur** — [api.v2.sondehub.org](https://api.v2.sondehub.org)  
   Public radiosonde and amateur high-altitude balloon telemetry (CC BY-SA 2.0).
-- Filtered client-side for the Illinois bounding box and for callsigns of interest (KE9CFY, X2Griffon / MSDS payloads when active).
+- Filtered client-side for the Illinois bounding box and for callsigns of interest (KE9CFY, X2Griffon / Aerostratospheric payloads when active).
 
 ## Repository Layout
 
@@ -71,18 +71,18 @@ A GitHub Action runs daily (≈ 12:00 UTC) to:
 - **SondeHub / Project Horus** — telemetry database and API  
   https://sondehub.org · https://github.com/projecthorus/sondehub-infra  
   Data licensed **Creative Commons BY-SA 2.0**
-- **Midwest Stratospheric Data Systems (MSDS)** — curation, regional filtering, Atmospheric Explorer integration  
+- **Aerostratospheric** — curation, regional filtering, Atmospheric Explorer integration  
   https://www.midwestsds.com · Casey, Illinois
 - Amateur radio community receivers that upload to SondeHub
 
-When using this archive please attribute both **SondeHub** and **Midwest Stratospheric Data Systems**.
+When using this archive please attribute both **SondeHub** and **Aerostratospheric**.
 
-## Related MSDS Repositories
+## Related Aerostratospheric Repositories
 
-- [msds-data](https://github.com/Midwest-Stratospheric/msds-data) — MSDS flight + ground weather releases
+- [msds-data](https://github.com/Midwest-Stratospheric/msds-data) — Aerostratospheric flight + ground weather releases
 - [International-Ground-Data-Repository](https://github.com/Midwest-Stratospheric/International-Ground-Data-Repository) — broader upper-air aggregation
 
 ---
 
-© 2026 Midwest Stratospheric Data Systems  
+© 2026 Aerostratospheric  
 Open data for atmospheric science, education, and citizen science.
