@@ -6,6 +6,12 @@ Casey, Illinois · NASA GLOBE GO-4VW9B · Open atmospheric data
 Daily archive of public SondeHub telemetry focused on the **Illinois / Casey IL region**.  
 This repository supports the [MSDS Atmospheric Explorer](https://www.midwestsds.com/atmospheric-explorer.html) and open research into vertical atmospheric profiles, wind, and near-space conditions over the Midwest.
 
+## Operation Canis Major
+
+<img src="https://www.midwestsds.com/images/operation-canis-major-patch.png" alt="Operation Canis Major patch" width="120" align="right">
+
+This project is part of [Operation Canis Major](https://www.midwestsds.com/operation-canis-major.html), often called Project Canis: Aerostratospheric's mission objective to provide open stratospheric and atmospheric research and data, unrestricted, to the public. Learn more: https://www.midwestsds.com/operation-canis-major.html
+
 ## Coverage Area
 
 Approximate bounding box used for filtering:
